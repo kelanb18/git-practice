@@ -334,6 +334,24 @@
       el.className = `dot ${cls}`;
     }
 
+    // Utility: decide which transit node to show when the pair ['intl','to_us'] represent
+    // the same logical state for different destination types. We never show both at once.
+    function isUSDestination() {
+      const meta = (document.getElementById('meta') || {}).innerText || '';
+      const txt = meta.toLowerCase();
+      return /\b(us|u\.s\.|united states|ny|new york)\b/.test(txt);
+    }
+
+    function getVisibleDots() {
+      // If the timeline itself is one of the pair, always show that one
+      const pair = ['intl', 'to_us'];
+      if (pair.includes(currentTimeline)) return DOT_IDS.filter(k => k !== (currentTimeline === 'intl' ? 'to_us' : (currentTimeline === 'to_us' ? 'intl' : '')));
+
+      // Otherwise infer from destination (default behavior): US -> show 'to_us', else show 'intl'
+      const showToUS = isUSDestination();
+      return DOT_IDS.filter(k => (showToUS ? k !== 'intl' : k !== 'to_us'));
+    }
+
     // Update the UI from the currentTimeline and overlay values
     function render() {
       const s = STATES[currentTimeline] || STATES.intl;
@@ -346,11 +364,22 @@
       const nowTextEl = document.getElementById('nowText');
       const nowCard = document.getElementById('nowCard');
 
-      // Timeline rendering rules:
-      // - If timeline is 'delivered' => terminal: mark ALL dots as done, remove any active halo
+      // Decide which dots are visible (never show both 'intl' and 'to_us')
+      const visibleDots = getVisibleDots();
+
+      // Show/hide timeline items based on visibleDots
+      DOT_IDS.forEach(k => {
+        const dotEl = document.getElementById(`dot-${k}`);
+        if (!dotEl) return;
+        const item = dotEl.closest('.timeline-item');
+        if (item) item.style.display = visibleDots.includes(k) ? 'flex' : 'none';
+      });
+
+      // Timeline rendering rules (only across visible dots):
+      // - If timeline is 'delivered' => terminal: mark visible dots as done, remove any active halo
       // - Otherwise: everything before the active index is 'done', active index is 'active', after is 'upcoming'
       if (currentTimeline === 'delivered') {
-        DOT_IDS.forEach(k => setDotClass(k, 'done'));
+        visibleDots.forEach(k => setDotClass(k, 'done'));
         // Delivered gets a success look on the now card
         nowCard.classList.remove('now');
         nowCard.classList.add('success');
@@ -360,13 +389,16 @@
         nowTextEl.innerText = STATES.delivered.nowText;
         overlay = null;
       } else {
-        // Standard in-transit rendering
-        const activeIndex = DOT_IDS.indexOf(currentTimeline);
-        DOT_IDS.forEach((k, idx) => {
+        // Standard in-transit rendering using only visible dots
+        const activeIndex = visibleDots.indexOf(currentTimeline);
+        visibleDots.forEach((k, idx) => {
           if (idx < activeIndex) setDotClass(k, 'done');
           else if (idx === activeIndex) setDotClass(k, 'active');
           else setDotClass(k, 'upcoming');
         });
+
+        // Also ensure any hidden dot is set to upcoming (keeps DOM classes predictable)
+        DOT_IDS.filter(k => !visibleDots.includes(k)).forEach(k => setDotClass(k, 'upcoming'));
 
         // Normal now card style
         nowCard.classList.remove('success');
