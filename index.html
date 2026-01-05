@@ -334,9 +334,23 @@
       el.className = `dot ${cls}`;
     }
 
+    // Transit preference: null = infer from `meta`, 'us' = force U.S. type (show `to_us`),
+    // 'intl' = force international type (show `intl`). You can set it via
+    // `setTransitPreference('us'|'intl'|'auto')` (auto = infer from meta).
+    let transitPreference = null; // null == auto
+
+    function setTransitPreference(pref) {
+      if (pref === 'auto') transitPreference = null;
+      else if (pref === 'us' || pref === 'intl') transitPreference = pref;
+      else console.warn('setTransitPreference expects "us", "intl", or "auto"');
+      render();
+    }
+
     // Utility: decide which transit node to show when the pair ['intl','to_us'] represent
     // the same logical state for different destination types. We never show both at once.
     function isUSDestination() {
+      if (transitPreference === 'us') return true;
+      if (transitPreference === 'intl') return false;
       const meta = (document.getElementById('meta') || {}).innerText || '';
       const txt = meta.toLowerCase();
       return /\b(us|u\.s\.|united states|ny|new york)\b/.test(txt);
@@ -443,6 +457,8 @@
     // Expose setState globally (used by inline demo buttons)
     window.setState = setState;
     window.toggleLinks = toggleLinks;
+    // Expose transit preference setter for deterministic control in demos/tests
+    window.setTransitPreference = setTransitPreference;
   </script>
 </body>
 </html>
