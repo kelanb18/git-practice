@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bokksu Order Tracking Prototype</title>
+  <title>Bokksu Tracking Wrapper Prototype</title>
 
   <style>
     body {
@@ -27,7 +27,7 @@
     .meta {
       color: #6f6f6f;
       font-size: 14px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .helper {
@@ -56,20 +56,19 @@
       border-radius: 50%;
       margin-top: 4px;
       flex-shrink: 0;
-    }
-
-    .done {
-      background: #2f6f5e;
-    }
-
-    .active {
-      background: #2f6f5e;
-      box-shadow: 0 0 0 4px rgba(47,111,94,0.15);
-    }
-
-    .upcoming {
       border: 2px solid #cfcfcf;
       background: #fff;
+    }
+
+    .dot.done {
+      background: #2f6f5e;
+      border-color: #2f6f5e;
+    }
+
+    .dot.active {
+      background: #2f6f5e;
+      border-color: #2f6f5e;
+      box-shadow: 0 0 0 4px rgba(47,111,94,0.15);
     }
 
     .title {
@@ -109,7 +108,7 @@
     <!-- Demo controls -->
     <div class="card" style="margin-bottom:16px;">
       <strong style="display:block; margin-bottom:8px;">Demo states</strong>
-      <button onclick="setState('intl')">International Transit</button> ·
+      <button onclick="setState('international')">International Transit</button> ·
       <button onclick="setState('destination')">Destination Processing</button> ·
       <button onclick="setState('out')">Out for Delivery</button> ·
       <button onclick="setState('delivered')">Delivered</button> ·
@@ -126,15 +125,7 @@
     <div class="card">
 
       <div class="timeline-item">
-        <div class="dot done" id="dot-origin"></div>
-        <div>
-          <div class="title">Preparing at Origin</div>
-          <div class="sub">Packed and handed to carrier</div>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="dot active" id="dot-intl"></div>
+        <div class="dot" id="dot-intl"></div>
         <div>
           <div class="title">International Transit</div>
           <div class="sub">Traveling between countries · Tracking may pause</div>
@@ -142,7 +133,7 @@
       </div>
 
       <div class="timeline-item">
-        <div class="dot upcoming" id="dot-destination"></div>
+        <div class="dot" id="dot-destination"></div>
         <div>
           <div class="title">Destination Processing</div>
           <div class="sub">Arrival at destination hub and carrier handoff</div>
@@ -150,22 +141,20 @@
       </div>
 
       <div class="timeline-item">
-        <div class="dot upcoming" id="dot-out"></div>
+        <div class="dot" id="dot-out"></div>
         <div>
           <div class="title">Out for Delivery</div>
-          <div class="sub">Final delivery by local carrier</div>
+          <div class="sub">Final delivery with local carrier</div>
         </div>
       </div>
 
     </div>
 
-    <!-- Now card -->
+    <!-- Now happening -->
     <div class="card now">
       <strong>What’s happening now</strong>
       <p id="now-text">
-        Your Bokksu has departed the origin country and is in international transit.
-        During this stage, tracking updates may be limited.
-        Updates typically resume once it reaches the destination hub.
+        Your Bokksu is preparing for international transit.
       </p>
     </div>
 
@@ -178,52 +167,56 @@
 
   <script>
     function resetDots() {
-      ['origin','intl','destination','out'].forEach(id => {
-        document.getElementById('dot-' + id).className = 'dot upcoming';
+      document.querySelectorAll('.dot').forEach(dot => {
+        dot.className = 'dot';
       });
-      document.getElementById('dot-origin').className = 'dot done';
     }
 
     function setState(state) {
       resetDots();
       const text = document.getElementById('now-text');
 
-      if (state === 'intl') {
-        document.getElementById('dot-intl').className = 'dot active';
+      if (state === 'international') {
+        document.getElementById('dot-intl').classList.add('active');
         text.innerText =
-          'Your Bokksu is in international transit. Tracking updates may be limited during this stage.';
+          'Your Bokksu has departed the origin country and is in international transit. Tracking updates may be limited during this stage.';
       }
 
       if (state === 'destination') {
-        document.getElementById('dot-intl').className = 'dot done';
-        document.getElementById('dot-destination').className = 'dot active';
+        document.getElementById('dot-intl').classList.add('done');
+        document.getElementById('dot-destination').classList.add('active');
         text.innerText =
-          'Your Bokksu has arrived at the destination hub and is being processed by the local carrier.';
+          'Your Bokksu has arrived in the destination country and is being processed by the local carrier.';
       }
 
       if (state === 'out') {
-        document.getElementById('dot-intl').className = 'dot done';
-        document.getElementById('dot-destination').className = 'dot done';
-        document.getElementById('dot-out').className = 'dot active';
+        document.getElementById('dot-intl').classList.add('done');
+        document.getElementById('dot-destination').classList.add('done');
+        document.getElementById('dot-out').classList.add('active');
         text.innerText =
-          'Your Bokksu is out for delivery and should arrive soon.';
+          'Your Bokksu is with the local carrier and out for delivery.';
       }
 
       if (state === 'delivered') {
-        document.getElementById('dot-intl').className = 'dot done';
-        document.getElementById('dot-destination').className = 'dot done';
-        document.getElementById('dot-out').className = 'dot done';
+        document.getElementById('dot-intl').classList.add('done');
+        document.getElementById('dot-destination').classList.add('done');
+        document.getElementById('dot-out').classList.add('done');
         text.innerText =
-          'Your Bokksu has been delivered. We hope you enjoy your snacks!';
+          'Your Bokksu has been delivered. We hope you enjoy!';
       }
 
       if (state === 'stalled') {
-        document.getElementById('dot-intl').className = 'dot active';
+        document.getElementById('dot-intl').classList.add('active');
         text.innerText =
-          'Your Bokksu is still in international transit. This can take longer during peak periods. If there are no updates after 10+ days, our support team can help.';
+          'Your Bokksu is still in transit. This can take longer during peak periods. If there are no updates after 10+ days, our support team can help.';
       }
     }
+
+    // Default state
+    setState('international');
   </script>
+
 </body>
 </html>
+
 
