@@ -3,51 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bokksu Tracking Wrapper Prototype</title>
-
+  <title>Bokksu Order Tracking Prototype</title>
   <style>
+    :root {
+      --bg: #faf9f7;
+      --text: #2b2b2b;
+      --muted: #6f6f6f;
+      --muted2: #8a8a8a;
+      --card: #ffffff;
+      --shadow: 0 1px 2px rgba(0,0,0,0.04);
+      --accent: #2f6f5e;
+      --accentHalo: rgba(47,111,94,0.15);
+      --border: #cfcfcf;
+      --now: #f3efe9;
+      --successBg: #eef6f2;
+      --successBorder: rgba(47,111,94,0.25);
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #faf9f7;
-      color: #2b2b2b;
+      background: var(--bg);
+      color: var(--text);
       margin: 0;
       padding: 32px;
     }
 
     .container {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
     }
 
     h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
+      font-size: 34px;
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
     }
 
     .meta {
-      color: #6f6f6f;
+      color: var(--muted);
       font-size: 14px;
       margin-bottom: 16px;
     }
 
     .helper {
       font-size: 14px;
-      color: #8a8a8a;
-      margin-bottom: 32px;
+      color: var(--muted2);
+      margin-bottom: 28px;
+      line-height: 1.4;
     }
 
     .card {
-      background: #ffffff;
-      border-radius: 12px;
+      background: var(--card);
+      border-radius: 14px;
       padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
     }
 
+    /* Demo controls */
+    .demo {
+      margin-bottom: 16px;
+    }
+    .demo strong {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .demo button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .demo button:hover {
+      text-decoration: underline;
+    }
+
+    /* Timeline */
     .timeline-item {
       display: flex;
       gap: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+    }
+    .timeline-item:last-child {
+      margin-bottom: 0;
     }
 
     .dot {
@@ -56,48 +96,68 @@
       border-radius: 50%;
       margin-top: 4px;
       flex-shrink: 0;
-      border: 2px solid #cfcfcf;
-      background: #fff;
+      box-sizing: border-box;
     }
-
-    .dot.done {
-      background: #2f6f5e;
-      border-color: #2f6f5e;
-    }
-
-    .dot.active {
-      background: #2f6f5e;
-      border-color: #2f6f5e;
-      box-shadow: 0 0 0 4px rgba(47,111,94,0.15);
-    }
+    .dot.done { background: var(--accent); }
+    .dot.active { background: var(--accent); box-shadow: 0 0 0 4px var(--accentHalo); }
+    .dot.upcoming { border: 2px solid var(--border); background: #fff; }
 
     .title {
-      font-weight: 600;
+      font-weight: 650;
+      font-size: 18px;
+      margin-bottom: 2px;
     }
-
     .sub {
       font-size: 14px;
-      color: #6f6f6f;
+      color: var(--muted);
+      line-height: 1.35;
     }
 
+    /* Now / status cards */
     .now {
-      background: #f3efe9;
+      background: var(--now);
     }
 
-    button {
+    .success {
+      background: var(--successBg);
+      border: 1px solid var(--successBorder);
+    }
+
+    .success strong {
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    /* Links */
+    .linkRow button {
       background: none;
       border: none;
-      color: #2f6f5e;
+      color: var(--accent);
       font-size: 14px;
       cursor: pointer;
       padding: 0;
+    }
+    .links {
+      margin-top: 12px;
+      display: none;
+    }
+    .links a {
+      display: block;
+      color: var(--accent);
+      text-decoration: none;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    .links a:hover {
+      text-decoration: underline;
     }
 
     footer {
       text-align: center;
       font-size: 14px;
-      color: #6f6f6f;
-      margin-top: 32px;
+      color: var(--muted);
+      margin-top: 22px;
+      line-height: 1.35;
     }
   </style>
 </head>
@@ -105,27 +165,37 @@
 <body>
   <div class="container">
 
-    <!-- Demo controls -->
-    <div class="card" style="margin-bottom:16px;">
-      <strong style="display:block; margin-bottom:8px;">Demo states</strong>
-      <button onclick="setState('international')">International Transit</button> ·
-      <button onclick="setState('destination')">Destination Processing</button> ·
+    <!-- Demo controls (internal only) -->
+    <div class="card demo">
+      <strong>Demo states</strong>
+      <button onclick="setState('japan')">Preparing in Japan</button> ·
+      <button onclick="setState('intl')">International Transit</button> ·
+      <button onclick="setState('to_us')">In Transit to the U.S.</button> ·
+      <button onclick="setState('dest')">Destination Processing</button> ·
       <button onclick="setState('out')">Out for Delivery</button> ·
       <button onclick="setState('delivered')">Delivered</button> ·
       <button onclick="setState('stalled')">Stalled</button>
     </div>
 
-    <h1>Your Bokksu is on the way 🍱</h1>
-    <div class="meta">Order #SNB4432 · Shipped internationally</div>
-    <div class="helper">
+    <h1 id="headline">Your Bokksu is on the way 🍱</h1>
+    <div class="meta" id="meta">Order #SNB4432 · Shipped from Japan → New York, NY</div>
+    <div class="helper" id="helper">
       International shipments may take a few days before tracking updates appear. This is normal.
     </div>
 
     <!-- Timeline -->
-    <div class="card">
+    <div class="card" id="timelineCard">
 
       <div class="timeline-item">
-        <div class="dot" id="dot-intl"></div>
+        <div class="dot upcoming" id="dot-japan"></div>
+        <div>
+          <div class="title">Preparing in Japan</div>
+          <div class="sub">Packed and handed to carrier</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="dot upcoming" id="dot-intl"></div>
         <div>
           <div class="title">International Transit</div>
           <div class="sub">Traveling between countries · Tracking may pause</div>
@@ -133,106 +203,191 @@
       </div>
 
       <div class="timeline-item">
-        <div class="dot" id="dot-destination"></div>
+        <div class="dot upcoming" id="dot-to_us"></div>
         <div>
-          <div class="title">Destination Processing</div>
-          <div class="sub">Arrival at destination hub and carrier handoff</div>
+          <div class="title">In Transit to the U.S.</div>
+          <div class="sub">En route to the U.S. network · Scans may be limited</div>
         </div>
       </div>
 
       <div class="timeline-item">
-        <div class="dot" id="dot-out"></div>
+        <div class="dot upcoming" id="dot-dest"></div>
+        <div>
+          <div class="title">Destination Processing</div>
+          <div class="sub">Arrival at destination hub and handoff</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="dot upcoming" id="dot-out"></div>
         <div>
           <div class="title">Out for Delivery</div>
-          <div class="sub">Final delivery with local carrier</div>
+          <div class="sub">Final delivery by last-mile carrier</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="dot upcoming" id="dot-delivered"></div>
+        <div>
+          <div class="title">Delivered</div>
+          <div class="sub">Package delivered successfully</div>
         </div>
       </div>
 
     </div>
 
-    <!-- Now happening -->
-    <div class="card now">
-      <strong>What’s happening now</strong>
-      <p id="now-text">
-        Your Bokksu is preparing for international transit.
+    <!-- What's happening now -->
+    <div class="card now" id="nowCard">
+      <strong id="nowTitle">What’s happening now</strong>
+      <p id="nowText" style="margin:10px 0 0; line-height:1.45;">
+        Your Bokksu has departed the origin country and is in international transit. During this stage, tracking updates may be limited. Updates typically resume once it reaches the destination hub.
       </p>
     </div>
 
-    <footer>
-      Most delivery questions are answered in our Delivery FAQ.
-      If tracking hasn’t updated in 10+ days, our support team can help.
+    <!-- Carrier links -->
+    <div class="card linkRow" id="linksCard">
+      <button onclick="toggleLinks()">View detailed carrier tracking</button>
+      <div class="links" id="links">
+        <a href="#" onclick="alert('OCS tracking placeholder'); return false;">OCS tracking</a>
+        <a href="#" onclick="alert('OSM tracking placeholder'); return false;">OSM tracking (some areas)</a>
+        <a href="#" onclick="alert('USPS tracking placeholder'); return false;">USPS tracking (last mile)</a>
+      </div>
+    </div>
+
+    <footer id="footerText">
+      Most delivery questions are answered in our Delivery FAQ. If tracking hasn’t updated in 10+ days, our support team can help.
     </footer>
 
   </div>
 
   <script>
-    function resetDots() {
-      document.querySelectorAll('.dot').forEach(dot => {
-        dot.className = 'dot';
+    const DOT_IDS = ['japan','intl','to_us','dest','out','delivered'];
+
+    // State model:
+    // activeKey: which dot is "active"
+    // doneThrough: all dots <= this index become done (except active dot which becomes active)
+    // headline/meta/helper/now copy updates
+    const STATES = {
+      japan: {
+        activeKey: 'japan',
+        doneThrough: -1,
+        headline: 'Your Bokksu is on the way 🍱',
+        helper: 'We’ve packed your Bokksu and handed it off to the carrier in Japan. Tracking will begin updating as it moves through the network.',
+        nowTitle: 'What’s happening now',
+        nowText: 'Your Bokksu is being prepared and processed in Japan. The first scan may take a little time depending on carrier pickup and volume.'
+      },
+      intl: {
+        activeKey: 'intl',
+        doneThrough: 0,
+        headline: 'Your Bokksu is on the way 🍱',
+        helper: 'International shipments may take a few days before tracking updates appear. This is normal.',
+        nowTitle: 'What’s happening now',
+        nowText: 'Your Bokksu has departed the origin country and is in international transit. During this stage, tracking updates may be limited. Updates typically resume once it reaches the destination hub.'
+      },
+      to_us: {
+        activeKey: 'to_us',
+        doneThrough: 1,
+        headline: 'Your Bokksu is on the way 🍱',
+        helper: 'International scans can be spotty. If you don’t see movement for a bit, it usually means it’s between checkpoints.',
+        nowTitle: 'What’s happening now',
+        nowText: 'Your Bokksu is en route to the U.S. network. The next meaningful update often happens at the destination hub once it is received and processed.'
+      },
+      dest: {
+        activeKey: 'dest',
+        doneThrough: 2,
+        headline: 'Your Bokksu is on the way 🍱',
+        helper: 'Once your package reaches the destination hub, tracking updates usually become more frequent.',
+        nowTitle: 'What’s happening now',
+        nowText: 'Your Bokksu has arrived at the destination hub and is being processed for last-mile delivery. This is when the last-mile carrier (USPS/OSM) typically starts showing clearer scans.'
+      },
+      out: {
+        activeKey: 'out',
+        doneThrough: 3,
+        headline: 'Your Bokksu is arriving soon 🍱',
+        helper: 'Your package is with the last-mile carrier and should be delivered soon.',
+        nowTitle: 'What’s happening now',
+        nowText: 'Your Bokksu is out for delivery today. If you don’t see a delivery scan by end of day, it may roll to the next delivery day depending on local routing.'
+      },
+      delivered: {
+        activeKey: 'delivered',
+        doneThrough: 4,
+        headline: 'Your Bokksu has been delivered 🎉',
+        helper: 'Delivered. If anything looks off (missing or damaged), support can help.',
+        nowTitle: 'Delivered',
+        nowText: 'Your Bokksu was delivered successfully. Enjoy! If you can’t locate it, check around your delivery area (front desk, mailroom, neighbors) and reach out if you still can’t find it.'
+      },
+      stalled: {
+        activeKey: 'intl',
+        doneThrough: 0,
+        headline: 'Your Bokksu is on the way 🍱',
+        helper: 'Sometimes tracking pauses during international transit. This does not always indicate a problem.',
+        nowTitle: 'Tracking looks stalled',
+        nowText: 'Your Bokksu is still in transit, but tracking hasn’t updated recently. During peak periods this can take longer. If there are no updates after 10+ days, our support team can help.'
+      }
+    };
+
+    function setDotClass(key, cls) {
+      const el = document.getElementById(`dot-${key}`);
+      if (!el) return;
+      el.className = `dot ${cls}`;
+    }
+
+    function renderState(stateKey) {
+      const s = STATES[stateKey] || STATES.intl;
+
+      // Headline + copy
+      document.getElementById('headline').innerText = s.headline;
+      document.getElementById('helper').innerText = s.helper;
+      document.getElementById('nowTitle').innerText = s.nowTitle;
+      document.getElementById('nowText').innerText = s.nowText;
+
+      // Timeline styling rules:
+      // - Everything before active is "done"
+      // - Active is "active"
+      // - Everything after is "upcoming"
+      const activeIndex = DOT_IDS.indexOf(s.activeKey);
+      DOT_IDS.forEach((k, idx) => {
+        if (idx < activeIndex) setDotClass(k, 'done');
+        else if (idx === activeIndex) setDotClass(k, 'active');
+        else setDotClass(k, 'upcoming');
       });
+
+      // Delivered should feel terminal:
+      // - make "now" card look successy
+      // - optionally collapse/hide link card if you want (we keep it visible)
+      const nowCard = document.getElementById('nowCard');
+      const timelineCard = document.getElementById('timelineCard');
+
+      if (stateKey === 'delivered') {
+        nowCard.classList.remove('now');
+        nowCard.classList.add('success');
+
+        // Make the delivered dot DONE (and still "active" look) by forcing it active; also mark previous as done already.
+        // Done above. Now we also soften future confusion by visually "completing" the timeline.
+        // (Optional) you could hide the timeline; keeping it visible here.
+      } else {
+        nowCard.classList.remove('success');
+        nowCard.classList.add('now');
+      }
+
+      // If stalled, we keep the timeline but the messaging explains it.
+      // If you want stalled to highlight a different dot, change STATES.stalled.activeKey.
     }
 
-    function setState(state) {
-      resetDots();
-      const text = document.getElementById('now-text');
-
-      if (state === 'international') {
-        document.getElementById('dot-intl').classList.add('active');
-        text.innerText =
-          'Your Bokksu has departed the origin country and is in international transit. Tracking updates may be limited during this stage.';
-      }
-
-      if (state === 'destination') {
-        document.getElementById('dot-intl').classList.add('done');
-        document.getElementById('dot-destination').classList.add('active');
-        text.innerText =
-          'Your Bokksu has arrived in the destination country and is being processed by the local carrier.';
-      }
-
-      if (state === 'out') {
-        document.getElementById('dot-intl').classList.add('done');
-        document.getElementById('dot-destination').classList.add('done');
-        document.getElementById('dot-out').classList.add('active');
-        text.innerText =
-          'Your Bokksu is with the local carrier and out for delivery.';
-      }
-
-   if (state === 'delivered') {
-  document.getElementById('dot-intl').classList.add('done');
-  document.getElementById('dot-destination').classList.add('done');
-  document.getElementById('dot-out').classList.add('delivered');
-  text.innerText =
-    'Your Bokksu has been delivered 🎉 We hope you enjoy your snacks!';
-}
-
-
-      if (state === 'stalled') {
-        document.getElementById('dot-intl').classList.add('active');
-        text.innerText =
-          'Your Bokksu is still in transit. This can take longer during peak periods. If there are no updates after 10+ days, our support team can help.';
-      }
-      .dot.delivered {
-  background: #2f6f5e;
-  border-color: #2f6f5e;
-  position: relative;
-}
-
-.dot.delivered::after {
-  content: "✓";
-  color: white;
-  font-size: 10px;
-  position: absolute;
-  top: -1px;
-  left: 2px;
-}
-
+    function setState(stateKey) {
+      renderState(stateKey);
     }
 
-    // Default state
-    setState('international');
+    function toggleLinks() {
+      const links = document.getElementById('links');
+      links.style.display = links.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Default state on load:
+    renderState('intl');
   </script>
-
 </body>
 </html>
+
 
 
