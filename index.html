@@ -261,70 +261,72 @@
   </div>
 
   <script>
+    /**
+     * Refactored state logic
+     * - Maintain a single timeline state (`currentTimeline`) that controls which dot is active.
+     * - Support a non-advancing overlay state `stalled` which changes only the "now" messaging
+     *   and does NOT move the timeline.
+     * - Delivered is terminal: when timeline == 'delivered' all dots show as done and the
+     *   "now" card uses a success style. Delivered does not show the active halo used for
+     *   in-transit states (so it's visually distinct from "Out for Delivery").
+     * - Demo buttons map 1:1 to states. Calling setState('stalled') toggles the overlay.
+     */
+
     const DOT_IDS = ['japan','intl','to_us','dest','out','delivered'];
 
-    // State model:
-    // activeKey: which dot is "active"
-    // doneThrough: all dots <= this index become done (except active dot which becomes active)
-    // headline/meta/helper/now copy updates
+    // Core timeline state definitions (only timeline states here)
     const STATES = {
       japan: {
-        activeKey: 'japan',
-        doneThrough: -1,
         headline: 'Your Bokksu is on the way 🍱',
         helper: 'We’ve packed your Bokksu and handed it off to the carrier in Japan. Tracking will begin updating as it moves through the network.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu is being prepared and processed in Japan. The first scan may take a little time depending on carrier pickup and volume.'
       },
       intl: {
-        activeKey: 'intl',
-        doneThrough: 0,
         headline: 'Your Bokksu is on the way 🍱',
         helper: 'International shipments may take a few days before tracking updates appear. This is normal.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu has departed the origin country and is in international transit. During this stage, tracking updates may be limited. Updates typically resume once it reaches the destination hub.'
       },
       to_us: {
-        activeKey: 'to_us',
-        doneThrough: 1,
         headline: 'Your Bokksu is on the way 🍱',
         helper: 'International scans can be spotty. If you don’t see movement for a bit, it usually means it’s between checkpoints.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu is en route to the U.S. network. The next meaningful update often happens at the destination hub once it is received and processed.'
       },
       dest: {
-        activeKey: 'dest',
-        doneThrough: 2,
         headline: 'Your Bokksu is on the way 🍱',
         helper: 'Once your package reaches the destination hub, tracking updates usually become more frequent.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu has arrived at the destination hub and is being processed for last-mile delivery. This is when the last-mile carrier (USPS/OSM) typically starts showing clearer scans.'
       },
       out: {
-        activeKey: 'out',
-        doneThrough: 3,
         headline: 'Your Bokksu is arriving soon 🍱',
         helper: 'Your package is with the last-mile carrier and should be delivered soon.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu is out for delivery today. If you don’t see a delivery scan by end of day, it may roll to the next delivery day depending on local routing.'
       },
       delivered: {
-        activeKey: 'delivered',
-        doneThrough: 4,
         headline: 'Your Bokksu has been delivered 🎉',
         helper: 'Delivered. If anything looks off (missing or damaged), support can help.',
         nowTitle: 'Delivered',
         nowText: 'Your Bokksu was delivered successfully. Enjoy! If you can’t locate it, check around your delivery area (front desk, mailroom, neighbors) and reach out if you still can’t find it.'
-      },
-      stalled: {
-        activeKey: 'intl',
-        doneThrough: 0,
-        headline: 'Your Bokksu is on the way 🍱',
-        helper: 'Sometimes tracking pauses during international transit. This does not always indicate a problem.',
-        nowTitle: 'Tracking looks stalled',
-        nowText: 'Your Bokksu is still in transit, but tracking hasn’t updated recently. During peak periods this can take longer. If there are no updates after 10+ days, our support team can help.'
       }
     };
+
+    // Special overlay messaging for stalled — does NOT change timeline
+    const STALLED_MSG = {
+      nowTitle: 'Tracking looks stalled',
+      nowText: 'Tracking hasn’t updated recently. This does not always indicate a problem. If there are no updates after 10+ days, please contact support.'
+    };
+
+    // Current timeline state (controls which dot is active). This is the single source of truth
+    // for the order progress. Default to 'intl' on load to match original behavior.
+    let currentTimeline = 'intl';
+
+    // Overlay state: null or 'stalled'. When set, it overlays messaging but does NOT change
+    // the timeline or which dot is active.
+    let overlay = null;
 
     function setDotClass(key, cls) {
       const el = document.getElementById(`dot-${key}`);
@@ -332,50 +334,70 @@
       el.className = `dot ${cls}`;
     }
 
-    function renderState(stateKey) {
-      const s = STATES[stateKey] || STATES.intl;
+    // Update the UI from the currentTimeline and overlay values
+    function render() {
+      const s = STATES[currentTimeline] || STATES.intl;
 
-      // Headline + copy
+      // Headline + helper come from the timeline state (stalled should NOT change headline/helper)
       document.getElementById('headline').innerText = s.headline;
       document.getElementById('helper').innerText = s.helper;
-      document.getElementById('nowTitle').innerText = s.nowTitle;
-      document.getElementById('nowText').innerText = s.nowText;
 
-      // Timeline styling rules:
-      // - Everything before active is "done"
-      // - Active is "active"
-      // - Everything after is "upcoming"
-      const activeIndex = DOT_IDS.indexOf(s.activeKey);
-      DOT_IDS.forEach((k, idx) => {
-        if (idx < activeIndex) setDotClass(k, 'done');
-        else if (idx === activeIndex) setDotClass(k, 'active');
-        else setDotClass(k, 'upcoming');
-      });
-
-      // Delivered should feel terminal:
-      // - make "now" card look successy
-      // - optionally collapse/hide link card if you want (we keep it visible)
+      const nowTitleEl = document.getElementById('nowTitle');
+      const nowTextEl = document.getElementById('nowText');
       const nowCard = document.getElementById('nowCard');
-      const timelineCard = document.getElementById('timelineCard');
 
-      if (stateKey === 'delivered') {
+      // Timeline rendering rules:
+      // - If timeline is 'delivered' => terminal: mark ALL dots as done, remove any active halo
+      // - Otherwise: everything before the active index is 'done', active index is 'active', after is 'upcoming'
+      if (currentTimeline === 'delivered') {
+        DOT_IDS.forEach(k => setDotClass(k, 'done'));
+        // Delivered gets a success look on the now card
         nowCard.classList.remove('now');
         nowCard.classList.add('success');
 
-        // Make the delivered dot DONE (and still "active" look) by forcing it active; also mark previous as done already.
-        // Done above. Now we also soften future confusion by visually "completing" the timeline.
-        // (Optional) you could hide the timeline; keeping it visible here.
+        // Now content comes from delivered state (overlay DOES NOT apply after delivered)
+        nowTitleEl.innerText = STATES.delivered.nowTitle;
+        nowTextEl.innerText = STATES.delivered.nowText;
+        overlay = null;
       } else {
+        // Standard in-transit rendering
+        const activeIndex = DOT_IDS.indexOf(currentTimeline);
+        DOT_IDS.forEach((k, idx) => {
+          if (idx < activeIndex) setDotClass(k, 'done');
+          else if (idx === activeIndex) setDotClass(k, 'active');
+          else setDotClass(k, 'upcoming');
+        });
+
+        // Normal now card style
         nowCard.classList.remove('success');
         nowCard.classList.add('now');
-      }
 
-      // If stalled, we keep the timeline but the messaging explains it.
-      // If you want stalled to highlight a different dot, change STATES.stalled.activeKey.
+        // Now content normally comes from timeline state, unless an overlay is present
+        if (overlay === 'stalled') {
+          nowTitleEl.innerText = STALLED_MSG.nowTitle;
+          nowTextEl.innerText = STALLED_MSG.nowText;
+        } else {
+          nowTitleEl.innerText = s.nowTitle;
+          nowTextEl.innerText = s.nowText;
+        }
+      }
     }
 
-    function setState(stateKey) {
-      renderState(stateKey);
+    // Public API used by demo buttons. Accepts one of the seven keys: the six timeline states
+    // or 'stalled'. 'stalled' toggles overlay messaging without moving the timeline.
+    function setState(key) {
+      if (key === 'stalled') {
+        // Toggle overlay on/off
+        overlay = overlay === 'stalled' ? null : 'stalled';
+      } else if (DOT_IDS.includes(key)) {
+        // Move timeline to the requested state; clear any overlay (stalled does not persist)
+        currentTimeline = key;
+        overlay = null;
+      } else {
+        console.warn('Unknown state:', key);
+        return;
+      }
+      render();
     }
 
     function toggleLinks() {
@@ -383,8 +405,12 @@
       links.style.display = links.style.display === 'block' ? 'none' : 'block';
     }
 
-    // Default state on load:
-    renderState('intl');
+    // Initialize UI
+    render();
+
+    // Expose setState globally (used by inline demo buttons)
+    window.setState = setState;
+    window.toggleLinks = toggleLinks;
   </script>
 </body>
 </html>
