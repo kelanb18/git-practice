@@ -197,19 +197,35 @@
           'Your Bokksu is with the local carrier and out for delivery.';
       }
 
-      if (state === 'delivered') {
-        document.getElementById('dot-intl').classList.add('done');
-        document.getElementById('dot-destination').classList.add('done');
-        document.getElementById('dot-out').classList.add('done');
-        text.innerText =
-          'Your Bokksu has been delivered. We hope you enjoy!';
-      }
+   if (state === 'delivered') {
+  document.getElementById('dot-intl').classList.add('done');
+  document.getElementById('dot-destination').classList.add('done');
+  document.getElementById('dot-out').classList.add('delivered');
+  text.innerText =
+    'Your Bokksu has been delivered 🎉 We hope you enjoy your snacks!';
+}
+
 
       if (state === 'stalled') {
         document.getElementById('dot-intl').classList.add('active');
         text.innerText =
           'Your Bokksu is still in transit. This can take longer during peak periods. If there are no updates after 10+ days, our support team can help.';
       }
+      .dot.delivered {
+  background: #2f6f5e;
+  border-color: #2f6f5e;
+  position: relative;
+}
+
+.dot.delivered::after {
+  content: "✓";
+  color: white;
+  font-size: 10px;
+  position: absolute;
+  top: -1px;
+  left: 2px;
+}
+
     }
 
     // Default state
