@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bokksu Order Tracking Prototype</title>
+
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -12,24 +13,29 @@
       margin: 0;
       padding: 32px;
     }
+
     .container {
       max-width: 720px;
       margin: 0 auto;
     }
+
     h1 {
       font-size: 28px;
       margin-bottom: 8px;
     }
+
     .meta {
       color: #6f6f6f;
       font-size: 14px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
+
     .helper {
       font-size: 14px;
       color: #8a8a8a;
       margin-bottom: 32px;
     }
+
     .card {
       background: #ffffff;
       border-radius: 12px;
@@ -37,11 +43,13 @@
       margin-bottom: 24px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
+
     .timeline-item {
       display: flex;
       gap: 16px;
       margin-bottom: 20px;
     }
+
     .dot {
       width: 14px;
       height: 14px;
@@ -49,19 +57,34 @@
       margin-top: 4px;
       flex-shrink: 0;
     }
-    .done { background: #2f6f5e; }
-    .active { background: #2f6f5e; box-shadow: 0 0 0 4px rgba(47,111,94,0.15); }
-    .upcoming { border: 2px solid #cfcfcf; background: #fff; }
+
+    .done {
+      background: #2f6f5e;
+    }
+
+    .active {
+      background: #2f6f5e;
+      box-shadow: 0 0 0 4px rgba(47,111,94,0.15);
+    }
+
+    .upcoming {
+      border: 2px solid #cfcfcf;
+      background: #fff;
+    }
+
     .title {
       font-weight: 600;
     }
+
     .sub {
       font-size: 14px;
       color: #6f6f6f;
     }
+
     .now {
       background: #f3efe9;
     }
+
     button {
       background: none;
       border: none;
@@ -70,17 +93,7 @@
       cursor: pointer;
       padding: 0;
     }
-    .links {
-      margin-top: 12px;
-      display: none;
-    }
-    .links a {
-      display: block;
-      color: #2f6f5e;
-      text-decoration: none;
-      margin-top: 6px;
-      font-size: 14px;
-    }
+
     footer {
       text-align: center;
       font-size: 14px;
@@ -89,128 +102,128 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <!-- Demo controls (for internal use only) -->
-<div class="card" style="margin-bottom:16px;">
-  <strong style="display:block; margin-bottom:8px;">Demo states</strong>
-<button onclick="setState('intl')">International Transit</button>
-  <button onclick="setState('us')">U.S. Processing</button> ·
-  <button onclick="setState('out')">Out for Delivery</button> ·
-  <button onclick="setState('delivered')">Delivered</button> ·
-  <button onclick="setState('stalled')">Stalled</button>
-</div>
+
+    <!-- Demo controls -->
+    <div class="card" style="margin-bottom:16px;">
+      <strong style="display:block; margin-bottom:8px;">Demo states</strong>
+      <button onclick="setState('intl')">International Transit</button> ·
+      <button onclick="setState('destination')">Destination Processing</button> ·
+      <button onclick="setState('out')">Out for Delivery</button> ·
+      <button onclick="setState('delivered')">Delivered</button> ·
+      <button onclick="setState('stalled')">Stalled</button>
+    </div>
 
     <h1>Your Bokksu is on the way 🍱</h1>
-    <div class="meta">Order #SNB4432 · Shipped from Japan → New York, NY</div>
-    <div class="helper">International shipments may take a few days before tracking updates appear. This is normal.</div>
-
-   <div class="card">
-  <div class="timeline-item">
-  <div class="dot active" id="dot-intl"></div>
-  <div>
-    <div class="title">International Transit</div>
-    <div class="sub">Traveling between countries · Tracking may pause</div>
-  </div>
-</div>
-
-  <div class="timeline-item">
-    <div class="dot active" id="dot-intl"></div>
-    <div>
-      <div class="title">In Transit to the U.S.</div>
-      <div class="sub">Traveling internationally · Tracking may pause</div>
+    <div class="meta">Order #SNB4432 · Shipped internationally</div>
+    <div class="helper">
+      International shipments may take a few days before tracking updates appear. This is normal.
     </div>
-  </div>
 
-<div class="timeline-item">
-  <div class="dot upcoming" id="dot-us"></div>
-  <div>
-    <div class="title">Destination Processing</div>
-    <div class="sub">Arrival at destination hub and handoff</div>
-  </div>
-</div>
+    <!-- Timeline -->
+    <div class="card">
 
+      <div class="timeline-item">
+        <div class="dot done" id="dot-origin"></div>
+        <div>
+          <div class="title">Preparing at Origin</div>
+          <div class="sub">Packed and handed to carrier</div>
+        </div>
+      </div>
 
-  <div class="timeline-item">
-    <div class="dot upcoming" id="dot-out"></div>
-    <div>
-      <div class="title">Out for Delivery</div>
-      <div class="sub">Final delivery by USPS</div>
+      <div class="timeline-item">
+        <div class="dot active" id="dot-intl"></div>
+        <div>
+          <div class="title">International Transit</div>
+          <div class="sub">Traveling between countries · Tracking may pause</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="dot upcoming" id="dot-destination"></div>
+        <div>
+          <div class="title">Destination Processing</div>
+          <div class="sub">Arrival at destination hub and carrier handoff</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="dot upcoming" id="dot-out"></div>
+        <div>
+          <div class="title">Out for Delivery</div>
+          <div class="sub">Final delivery by local carrier</div>
+        </div>
+      </div>
+
     </div>
-  </div>
-</div>
-<div class="card now">
-  <strong>What’s happening now</strong>
-<p id="now-text">
-  Your Bokksu has departed the origin country and is in international transit.
-  During this stage, tracking updates may be limited.
-  Updates typically resume once it reaches the destination hub.
-</p>
 
-
-
+    <!-- Now card -->
+    <div class="card now">
+      <strong>What’s happening now</strong>
+      <p id="now-text">
+        Your Bokksu has departed the origin country and is in international transit.
+        During this stage, tracking updates may be limited.
+        Updates typically resume once it reaches the destination hub.
+      </p>
+    </div>
 
     <footer>
-      Most delivery questions are answered in our Delivery FAQ. If tracking hasn’t updated in 10+ days, our support team can help.
+      Most delivery questions are answered in our Delivery FAQ.
+      If tracking hasn’t updated in 10+ days, our support team can help.
     </footer>
+
   </div>
 
   <script>
+    function resetDots() {
+      ['origin','intl','destination','out'].forEach(id => {
+        document.getElementById('dot-' + id).className = 'dot upcoming';
+      });
+      document.getElementById('dot-origin').className = 'dot done';
+    }
+
     function setState(state) {
-  const dots = ['japan','intl','us','out'];
-  dots.forEach(d => {
-    document.getElementById('dot-' + d).className = 'dot upcoming';
-  });
+      resetDots();
+      const text = document.getElementById('now-text');
 
-  // Japan is always done once shipped
-  document.getElementById('dot-japan').className = 'dot done';
+      if (state === 'intl') {
+        document.getElementById('dot-intl').className = 'dot active';
+        text.innerText =
+          'Your Bokksu is in international transit. Tracking updates may be limited during this stage.';
+      }
 
-  const text = document.getElementById('now-text');
+      if (state === 'destination') {
+        document.getElementById('dot-intl').className = 'dot done';
+        document.getElementById('dot-destination').className = 'dot active';
+        text.innerText =
+          'Your Bokksu has arrived at the destination hub and is being processed by the local carrier.';
+      }
 
-  if (state === 'intl') {
-    document.getElementById('dot-intl').className = 'dot active';
-text.innerText =
-  'Your Bokksu has departed the origin country and is in international transit. ' +
-  'During this stage, tracking updates may be limited. ' +
-  'Updates typically resume once it reaches the destination hub.';
-  }
+      if (state === 'out') {
+        document.getElementById('dot-intl').className = 'dot done';
+        document.getElementById('dot-destination').className = 'dot done';
+        document.getElementById('dot-out').className = 'dot active';
+        text.innerText =
+          'Your Bokksu is out for delivery and should arrive soon.';
+      }
 
-  if (state === 'us') {
-    document.getElementById('dot-intl').className = 'dot done';
-    document.getElementById('dot-us').className = 'dot active';
-text.innerText =
-  'Your Bokksu has arrived in the destination country and is being processed at the local hub. ' +
-  'Tracking updates should become more frequent from here.';
-  }
+      if (state === 'delivered') {
+        document.getElementById('dot-intl').className = 'dot done';
+        document.getElementById('dot-destination').className = 'dot done';
+        document.getElementById('dot-out').className = 'dot done';
+        text.innerText =
+          'Your Bokksu has been delivered. We hope you enjoy your snacks!';
+      }
 
-  if (state === 'out') {
-    document.getElementById('dot-intl').className = 'dot done';
-    document.getElementById('dot-us').className = 'dot done';
-    document.getElementById('dot-out').className = 'dot active';
-    text.innerText =
-      'Your Bokksu is out for delivery with USPS and should arrive soon.';
-  }
-
-  if (state === 'delivered') {
-    document.getElementById('dot-intl').className = 'dot done';
-    document.getElementById('dot-us').className = 'dot done';
-    document.getElementById('dot-out').className = 'dot done';
-    text.innerText =
-      'Your Bokksu has been delivered. We hope you enjoy your snacks!';
-  }
-
-  if (state === 'stalled') {
-    document.getElementById('dot-intl').className = 'dot active';
-    text.innerText =
-      'Your Bokksu is still in international transit. ' +
-      'This can take longer during peak periods. ' +
-      'If there are no updates after 10+ days, our support team can help.';
-  }
-}
-    function toggleLinks() {
-      const links = document.getElementById('links');
-      links.style.display = links.style.display === 'block' ? 'none' : 'block';
+      if (state === 'stalled') {
+        document.getElementById('dot-intl').className = 'dot active';
+        text.innerText =
+          'Your Bokksu is still in international transit. This can take longer during peak periods. If there are no updates after 10+ days, our support team can help.';
+      }
     }
   </script>
 </body>
 </html>
+
