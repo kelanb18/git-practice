@@ -6,58 +6,77 @@
   <title>Bokksu Order Tracking Prototype</title>
   <style>
     :root {
-      --bg: #faf9f7;
-      --text: #2b2b2b;
-      --muted: #6f6f6f;
-      --muted2: #8a8a8a;
-      --card: #ffffff;
-      --shadow: 0 1px 2px rgba(0,0,0,0.04);
-      --accent: #2f6f5e;
-      --accentHalo: rgba(47,111,94,0.15);
-      --border: #cfcfcf;
-      --now: #f3efe9;
-      --successBg: #eef6f2;
-      --successBorder: rgba(47,111,94,0.25);
+      /* Brand colors */
+      --bg: #f7f3ef; /* washi/soft tan */
+      --card: #fffaf7;
+      --text: #3a2a1a;
+      --muted: #a08c7d;
+      --muted2: #b7a89a;
+      --meta: #b7a89a;
+      --accent: #e26a2c; /* warm rust/persimmon */
+      --accentHalo: rgba(226,106,44,0.13);
+      --border: #e7d8c9;
+      --now: #f5ede6;
+      --successBg: #f3e7d9;
+      --successBorder: #e7d8c9;
+      /* Typography */
+      --headline: 'Orpheus Pro', 'Georgia', serif;
+      --body: 'Lato', 'Arial', sans-serif;
+      --metaFont: 'Montserrat', 'Arial', sans-serif;
+      --metaSpacing: 0.12em;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: var(--body);
       background: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 32px;
+      padding: 40px 0;
     }
 
     .container {
       max-width: 760px;
       margin: 0 auto;
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(58,42,26,0.04);
+      padding: 36px 32px 32px 32px;
     }
 
     h1 {
-      font-size: 34px;
-      margin: 0 0 8px;
-      letter-spacing: -0.02em;
+      font-family: var(--headline);
+      font-size: 38px;
+      font-weight: 400;
+      margin: 0 0 12px;
+      letter-spacing: -0.01em;
+      color: var(--text);
     }
 
     .meta {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 16px;
+      font-family: var(--metaFont);
+      color: var(--meta);
+      font-size: 13px;
+      letter-spacing: var(--metaSpacing);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      font-weight: 600;
     }
 
     .helper {
-      font-size: 14px;
+      font-family: var(--body);
+      font-size: 15px;
       color: var(--muted2);
-      margin-bottom: 28px;
-      line-height: 1.4;
+      margin-bottom: 32px;
+      line-height: 1.5;
+      font-weight: 400;
     }
 
     .card {
       background: var(--card);
-      border-radius: 14px;
-      padding: 24px;
-      margin-bottom: 18px;
-      box-shadow: var(--shadow);
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 1px 4px rgba(58,42,26,0.04);
     }
 
     /* Demo controls */
@@ -83,49 +102,73 @@
     /* Timeline */
     .timeline-item {
       display: flex;
-      gap: 16px;
-      margin-bottom: 18px;
+      gap: 22px;
+      margin-bottom: 28px;
+      align-items: flex-start;
     }
     .timeline-item:last-child {
       margin-bottom: 0;
     }
 
     .dot {
-      width: 14px;
-      height: 14px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      margin-top: 4px;
+      margin-top: 2px;
       flex-shrink: 0;
       box-sizing: border-box;
+      transition: box-shadow 0.2s, background 0.2s;
     }
-    .dot.done { background: var(--accent); }
-    .dot.active { background: var(--accent); box-shadow: 0 0 0 4px var(--accentHalo); }
-    .dot.upcoming { border: 2px solid var(--border); background: #fff; }
+    .dot.done {
+      background: var(--accent);
+      box-shadow: 0 0 0 0 var(--accentHalo);
+      border: none;
+    }
+    .dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 0 7px var(--accentHalo);
+      border: 2px solid #fff3e6;
+    }
+    .dot.upcoming {
+      border: 2px solid var(--border);
+      background: #fff;
+    }
 
     .title {
-      font-weight: 650;
-      font-size: 18px;
-      margin-bottom: 2px;
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 17px;
+      margin-bottom: 3px;
+      color: var(--text);
+      letter-spacing: -0.01em;
     }
     .sub {
-      font-size: 14px;
+      font-family: var(--body);
+      font-size: 15px;
       color: var(--muted);
-      line-height: 1.35;
+      line-height: 1.5;
+      font-weight: 400;
     }
 
     /* Now / status cards */
     .now {
       background: var(--now);
+      border: 1.5px solid var(--border);
     }
 
     .success {
       background: var(--successBg);
-      border: 1px solid var(--successBorder);
+      border: 1.5px solid var(--successBorder);
+      box-shadow: 0 2px 8px rgba(226,106,44,0.04);
     }
 
     .success strong {
       display: inline-block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      font-family: var(--headline);
+      font-size: 22px;
+      color: var(--accent);
+      font-weight: 400;
     }
 
     /* Links */
@@ -156,8 +199,11 @@
       text-align: center;
       font-size: 14px;
       color: var(--muted);
-      margin-top: 22px;
-      line-height: 1.35;
+      margin-top: 32px;
+      line-height: 1.5;
+      font-family: var(--metaFont);
+      letter-spacing: var(--metaSpacing);
+      text-transform: uppercase;
     }
   </style>
 </head>
