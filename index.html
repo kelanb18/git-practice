@@ -170,6 +170,7 @@
       <strong>Demo states</strong>
       <button onclick="setState('japan')">Preparing in Japan</button> ·
       <button onclick="setState('intl')">International Transit</button> ·
+      <button onclick="setState('customs')">In Customs</button> ·
       <button onclick="setState('to_us')">In Transit to the U.S.</button> ·
       <button onclick="setState('dest')">Destination Processing</button> ·
       <button onclick="setState('out')">Out for Delivery</button> ·
@@ -194,11 +195,20 @@
         </div>
       </div>
 
+
       <div class="timeline-item">
         <div class="dot upcoming" id="dot-intl"></div>
         <div>
           <div class="title">International Transit</div>
           <div class="sub">Traveling between countries · Tracking may pause</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="dot upcoming" id="dot-customs"></div>
+        <div>
+          <div class="title">In Customs</div>
+          <div class="sub">Clearing customs · Timing can vary and scans may pause</div>
         </div>
       </div>
 
@@ -272,7 +282,7 @@
      * - Demo buttons map 1:1 to states. Calling setState('stalled') toggles the overlay.
      */
 
-    const DOT_IDS = ['japan','intl','to_us','dest','out','delivered'];
+  const DOT_IDS = ['japan','intl','customs','to_us','dest','out','delivered'];
 
     // Core timeline state definitions (only timeline states here)
     const STATES = {
@@ -287,6 +297,12 @@
         helper: 'International shipments may take a few days before tracking updates appear. This is normal.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu has departed the origin country and is in international transit. During this stage, tracking updates may be limited. Updates typically resume once it reaches the destination hub.'
+      },
+      customs: {
+        headline: 'Your Bokksu is clearing customs',
+        helper: 'Your package is being processed by customs. This is a normal part of international shipping, and timing can vary.',
+        nowTitle: 'What’s happening now',
+        nowText: 'Your Bokksu is currently clearing customs. This process is routine, but timing can vary and tracking scans may pause until clearance is complete. Most packages clear within a few days.'
       },
       to_us: {
         headline: 'Your Bokksu is on the way 🍱',
@@ -357,13 +373,23 @@
     }
 
     function getVisibleDots() {
-      // If the timeline itself is one of the pair, always show that one
+      // If the timeline itself is one of the pair, always show that one (and customs)
       const pair = ['intl', 'to_us'];
-      if (pair.includes(currentTimeline)) return DOT_IDS.filter(k => k !== (currentTimeline === 'intl' ? 'to_us' : (currentTimeline === 'to_us' ? 'intl' : '')));
-
+      if (pair.includes(currentTimeline)) {
+        // Always show customs with whichever of intl/to_us is active
+        return DOT_IDS.filter(k => {
+          if (k === 'intl' && currentTimeline === 'to_us') return false;
+          if (k === 'to_us' && currentTimeline === 'intl') return false;
+          return true;
+        });
+      }
       // Otherwise infer from destination (default behavior): US -> show 'to_us', else show 'intl'
       const showToUS = isUSDestination();
-      return DOT_IDS.filter(k => (showToUS ? k !== 'intl' : k !== 'to_us'));
+      return DOT_IDS.filter(k => {
+        if (showToUS && k === 'intl') return false;
+        if (!showToUS && k === 'to_us') return false;
+        return true;
+      });
     }
 
     // Update the UI from the currentTimeline and overlay values
