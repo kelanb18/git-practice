@@ -171,7 +171,7 @@
       <button onclick="setState('preparing')">Preparing in Japan</button> ·
       <button onclick="setState('intl')">International Transit</button> ·
       <button onclick="setState('customs')">In Customs</button> ·
-      <button onclick="setState('to_dest')">To Destination Country</button> ·
+      <button onclick="setState('to_dest')">En Route to Destination Country</button> ·
       <button onclick="setState('dest')">Destination Processing</button> ·
       <button onclick="setState('out')">Out for Delivery</button> ·
       <button onclick="setState('delivered')">Delivered</button> ·
@@ -186,6 +186,7 @@
 
     <!-- Timeline -->
     <div class="card" id="timelineCard">
+
 
 
       <div class="timeline-item">
@@ -215,7 +216,7 @@
       <div class="timeline-item">
         <div class="dot upcoming" id="dot-to_dest"></div>
         <div>
-          <div class="title">To Destination Country</div>
+          <div class="title">En Route to Destination Country</div>
           <div class="sub">Traveling to the destination country after customs clearance</div>
         </div>
       </div>
@@ -305,7 +306,7 @@
         nowText: 'Your Bokksu is currently clearing customs. This process is routine, but timing can vary and tracking scans may pause until clearance is complete. Most packages clear within a few days.'
       },
       to_dest: {
-        headline: 'Your Bokksu is almost there 🍱',
+        headline: 'Your Bokksu is en route to the destination country 🍱',
         helper: 'Your package has cleared customs and is traveling to the destination country.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu has cleared customs and is on its way to the destination country. Tracking will update once it arrives at the local hub.'
