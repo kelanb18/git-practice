@@ -168,10 +168,10 @@
     <!-- Demo controls (internal only) -->
     <div class="card demo">
       <strong>Demo states</strong>
-      <button onclick="setState('japan')">Preparing in Japan</button> ·
+      <button onclick="setState('preparing')">Preparing in Japan</button> ·
       <button onclick="setState('intl')">International Transit</button> ·
       <button onclick="setState('customs')">In Customs</button> ·
-      <button onclick="setState('to_us')">In Transit to the U.S.</button> ·
+      <button onclick="setState('to_dest')">To Destination Country</button> ·
       <button onclick="setState('dest')">Destination Processing</button> ·
       <button onclick="setState('out')">Out for Delivery</button> ·
       <button onclick="setState('delivered')">Delivered</button> ·
@@ -187,20 +187,20 @@
     <!-- Timeline -->
     <div class="card" id="timelineCard">
 
+
       <div class="timeline-item">
-        <div class="dot upcoming" id="dot-japan"></div>
+        <div class="dot upcoming" id="dot-preparing"></div>
         <div>
           <div class="title">Preparing in Japan</div>
-          <div class="sub">Packed and handed to carrier</div>
+          <div class="sub">Order received and being packed</div>
         </div>
       </div>
-
 
       <div class="timeline-item">
         <div class="dot upcoming" id="dot-intl"></div>
         <div>
           <div class="title">International Transit</div>
-          <div class="sub">Traveling between countries · Tracking may pause</div>
+          <div class="sub">Shipped from Japan and en route internationally</div>
         </div>
       </div>
 
@@ -213,10 +213,10 @@
       </div>
 
       <div class="timeline-item">
-        <div class="dot upcoming" id="dot-to_us"></div>
+        <div class="dot upcoming" id="dot-to_dest"></div>
         <div>
-          <div class="title">In Transit to the U.S.</div>
-          <div class="sub">En route to the U.S. network · Scans may be limited</div>
+          <div class="title">To Destination Country</div>
+          <div class="sub">Traveling to the destination country after customs clearance</div>
         </div>
       </div>
 
@@ -282,21 +282,21 @@
      * - Demo buttons map 1:1 to states. Calling setState('stalled') toggles the overlay.
      */
 
-  const DOT_IDS = ['japan','intl','customs','to_us','dest','out','delivered'];
+  const DOT_IDS = ['preparing','intl','customs','to_dest','dest','out','delivered'];
 
     // Core timeline state definitions (only timeline states here)
     const STATES = {
-      japan: {
-        headline: 'Your Bokksu is on the way 🍱',
-        helper: 'We’ve packed your Bokksu and handed it off to the carrier in Japan. Tracking will begin updating as it moves through the network.',
+      preparing: {
+        headline: 'Your Bokksu is being prepared 🍱',
+        helper: 'We’ve received your order and are packing your Bokksu in Japan. Tracking will begin once it’s handed to the carrier.',
         nowTitle: 'What’s happening now',
-        nowText: 'Your Bokksu is being prepared and processed in Japan. The first scan may take a little time depending on carrier pickup and volume.'
+        nowText: 'Your Bokksu is being packed and prepared for shipment in Japan. The first scan will appear after it’s handed to the carrier.'
       },
       intl: {
         headline: 'Your Bokksu is on the way 🍱',
-        helper: 'International shipments may take a few days before tracking updates appear. This is normal.',
+        helper: 'Your package has shipped from Japan and is traveling internationally. Tracking may pause during this stage.',
         nowTitle: 'What’s happening now',
-        nowText: 'Your Bokksu has departed the origin country and is in international transit. During this stage, tracking updates may be limited. Updates typically resume once it reaches the destination hub.'
+        nowText: 'Your Bokksu has left Japan and is in international transit. Tracking updates may be limited until it reaches customs.'
       },
       customs: {
         headline: 'Your Bokksu is clearing customs',
@@ -304,14 +304,14 @@
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu is currently clearing customs. This process is routine, but timing can vary and tracking scans may pause until clearance is complete. Most packages clear within a few days.'
       },
-      to_us: {
-        headline: 'Your Bokksu is on the way 🍱',
-        helper: 'International scans can be spotty. If you don’t see movement for a bit, it usually means it’s between checkpoints.',
+      to_dest: {
+        headline: 'Your Bokksu is almost there 🍱',
+        helper: 'Your package has cleared customs and is traveling to the destination country.',
         nowTitle: 'What’s happening now',
-        nowText: 'Your Bokksu is en route to the U.S. network. The next meaningful update often happens at the destination hub once it is received and processed.'
+        nowText: 'Your Bokksu has cleared customs and is on its way to the destination country. Tracking will update once it arrives at the local hub.'
       },
       dest: {
-        headline: 'Your Bokksu is on the way 🍱',
+        headline: 'Your Bokksu is in the destination hub 🍱',
         helper: 'Once your package reaches the destination hub, tracking updates usually become more frequent.',
         nowTitle: 'What’s happening now',
         nowText: 'Your Bokksu has arrived at the destination hub and is being processed for last-mile delivery. This is when the last-mile carrier (USPS/OSM) typically starts showing clearer scans.'
@@ -373,23 +373,8 @@
     }
 
     function getVisibleDots() {
-      // If the timeline itself is one of the pair, always show that one (and customs)
-      const pair = ['intl', 'to_us'];
-      if (pair.includes(currentTimeline)) {
-        // Always show customs with whichever of intl/to_us is active
-        return DOT_IDS.filter(k => {
-          if (k === 'intl' && currentTimeline === 'to_us') return false;
-          if (k === 'to_us' && currentTimeline === 'intl') return false;
-          return true;
-        });
-      }
-      // Otherwise infer from destination (default behavior): US -> show 'to_us', else show 'intl'
-      const showToUS = isUSDestination();
-      return DOT_IDS.filter(k => {
-        if (showToUS && k === 'intl') return false;
-        if (!showToUS && k === 'to_us') return false;
-        return true;
-      });
+      // All states are now unique and always shown in order
+      return DOT_IDS;
     }
 
     // Update the UI from the currentTimeline and overlay values
